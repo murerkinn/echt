@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import app from './app'
 import { generateOpenApiSpec } from '../../../src'
+import app from './app'
 
 const spec = generateOpenApiSpec(app)
 

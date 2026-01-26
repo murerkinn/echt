@@ -9,23 +9,23 @@ const userSchema = {
   body: z.object({
     username: z.string().min(3),
     email: z.string().email(),
-    age: z.number().min(18)
+    age: z.number().min(18),
   }),
   headers: z.object({
-    'api-key': z.number()
+    'api-key': z.number(),
   }),
   query: z.object({
-    include: z.string().optional()
+    include: z.string().optional(),
   }),
   params: z.object({
-    username: z.string().optional()
+    username: z.string().optional(),
   }),
   response: z.object({
-    result: z.string().optional()
+    result: z.string().optional(),
   }),
   locals: z.object({
-    account: z.string().optional()
-  })
+    account: z.string().optional(),
+  }),
 }
 
 app.post('/users/:username', validate(userSchema), (req, res) => {
@@ -34,7 +34,7 @@ app.post('/users/:username', validate(userSchema), (req, res) => {
   res.send({ result: 'ok' })
 
   res.send({
-    result: `Created user ${username} (${email}) aged ${age}`
+    result: `Created user ${username} (${email}) aged ${age}`,
   })
 })
 

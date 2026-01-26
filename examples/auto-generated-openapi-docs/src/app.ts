@@ -1,12 +1,12 @@
-import express from 'express'
 import fs from 'node:fs'
 import path from 'node:path'
+import express from 'express'
 // putting a ts ignore here because swagger-ui-express types are conflicting with express types we use for echt
 // @ts-ignore
 import swaggerUi from 'swagger-ui-express'
 import { z } from 'zod'
-import todo from './routes/todo'
 import { validate } from '../../../src'
+import todo from './routes/todo'
 
 const openapiSpecContent = fs.readFileSync(
   path.resolve(__dirname, '..', 'output', './openapi-spec.json'),

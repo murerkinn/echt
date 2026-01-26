@@ -1,18 +1,18 @@
 import {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
-  type RouteConfig,
   type ResponseConfig,
+  type RouteConfig,
 } from '@asteasolutions/zod-to-openapi'
-import { type AnyZodObject } from 'zod'
 import { type Express } from 'express'
+import { type AnyZodObject } from 'zod'
 
+import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
 import type {
   SimpleResponseValidationSchema,
   TypedResponseValidationSchema,
   ValidationSchema,
 } from '.'
-import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 type SafeAny = any

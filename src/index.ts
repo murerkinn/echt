@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction, RequestHandler } from 'express'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { ZodError, type z } from 'zod'
 
 type StatusCodes =
@@ -86,7 +86,10 @@ export type TypedResponseValidationSchema = BaseValidationSchema & {
   response?: never
 }
 
-export type ValidationSchema = BaseValidationSchema | SimpleResponseValidationSchema | TypedResponseValidationSchema
+export type ValidationSchema =
+  | BaseValidationSchema
+  | SimpleResponseValidationSchema
+  | TypedResponseValidationSchema
 
 type InferSchemaType<T extends ValidationSchema> = {
   body: T['body'] extends z.ZodType ? z.infer<T['body']> : unknown
@@ -105,7 +108,10 @@ type ValidatedRequest<T extends ValidationSchema> = Request<
   InferSchemaType<T>['locals']
 >
 
-type TypedJsonResponse<T extends ValidationSchema, Status extends StatusCodes> = T extends TypedResponseValidationSchema
+type TypedJsonResponse<
+  T extends ValidationSchema,
+  Status extends StatusCodes,
+> = T extends TypedResponseValidationSchema
   ? Status extends keyof T['useResponse']
     ? T['useResponse'][Status] extends z.ZodType
       ? z.infer<T['useResponse'][Status]>
@@ -113,7 +119,10 @@ type TypedJsonResponse<T extends ValidationSchema, Status extends StatusCodes> =
     : never
   : never
 
-type ValidatedResponse<T extends ValidationSchema> = Omit<Response, 'req' | 'status' | 'json' | 'send'> & {
+type ValidatedResponse<T extends ValidationSchema> = Omit<
+  Response,
+  'req' | 'status' | 'json' | 'send'
+> & {
   req: Request
   status<S extends StatusCodes>(
     code: S
@@ -238,7 +247,7 @@ export const validate = <T extends ValidationSchema>(
       }
 
       if (validationErrors.length > 0) {
-        const allErrors = validationErrors.flatMap(error => error.errors)
+        const allErrors = validationErrors.flatMap((error) => error.errors)
         const errorResponse = { errors: allErrors }
         const baseRes = res as unknown as Response
         baseRes.status(400).json(errorResponse)
@@ -268,15 +277,16 @@ export const validate = <T extends ValidationSchema>(
             return originalJson(result)
           }
           chainedRes.send = (body: unknown) => {
+            let parsedBody = body
             if (res.get('Content-Type')?.includes('application/json')) {
-              body = JSON.parse(body as string)
+              parsedBody = JSON.parse(body as string)
             }
 
             const schema = typedResponse[code]
             if (!schema) {
               throw new Error(`No schema defined for status code ${code}`)
             }
-            const result = schema.parse(body)
+            const result = schema.parse(parsedBody)
 
             if (res.get('Content-Type')?.includes('application/json')) {
               return originalSend(JSON.stringify(result) as TypedJsonResponse<T, StatusCodes>)
@@ -287,7 +297,8 @@ export const validate = <T extends ValidationSchema>(
           return chainedRes
         }
 
-        res.status = ((code: StatusCodes) => createChainedResponse(code)) as ValidatedResponse<T>['status']
+        res.status = ((code: StatusCodes) =>
+          createChainedResponse(code)) as ValidatedResponse<T>['status']
 
         res.json = ((body: unknown) => {
           const statusCode = res.statusCode as StatusCodes
@@ -300,8 +311,9 @@ export const validate = <T extends ValidationSchema>(
         }) as ValidatedResponse<T>['json']
 
         res.send = ((body: unknown) => {
+          let parsedBody = body
           if (res.get('Content-Type')?.includes('application/json')) {
-            body = JSON.parse(body as string)
+            parsedBody = JSON.parse(body as string)
           }
 
           const statusCode = res.statusCode as StatusCodes
@@ -310,7 +322,7 @@ export const validate = <T extends ValidationSchema>(
             throw new Error(`No schema defined for status code ${statusCode}`)
           }
 
-          const result = schema.parse(body)
+          const result = schema.parse(parsedBody)
 
           if (res.get('Content-Type')?.includes('application/json')) {
             return originalSend(JSON.stringify(result) as TypedJsonResponse<T, StatusCodes>)
